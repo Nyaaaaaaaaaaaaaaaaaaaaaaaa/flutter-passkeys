@@ -27,8 +27,11 @@ jobs:
       - name: Set up HarmonyOS SDK
         uses: ErBWs/setup-ohos@4dbb63025116eb6165ceac58a4bf47cbdc5ac721
         with:
-          version: 6.1.1.280
+          version: 26.0.0.821
           cache: true
+
+      - name: Require HarmonyOS API 26
+        run: test "$(jq -r '.data.apiVersion' "$HOS_SDK_HOME/default/sdk-pkg.json")" = 26
 
       - name: Install pinned HarmonyOS Flutter
         run: |
