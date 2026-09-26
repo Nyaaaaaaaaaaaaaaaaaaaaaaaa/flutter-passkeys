@@ -1,0 +1,9 @@
+{
+  "name": "passkeys_ohos",
+  "version": "0.1.0",
+  "description": "HarmonyOS NEXT passkey implementation for Flutter",
+  "main": "index.ets",
+  "author": "",
+  "license": "BSD-3-Clause",
+  "dependencies": {}
+}

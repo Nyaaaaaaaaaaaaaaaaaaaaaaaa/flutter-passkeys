@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "passkeys_ohos",
+    "type": "har",
+    "deviceTypes": [
+      "default",
+      "tablet"
+    ]
+  }
+}

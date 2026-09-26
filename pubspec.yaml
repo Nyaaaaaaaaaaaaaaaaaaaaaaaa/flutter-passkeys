@@ -11,6 +11,7 @@ workspace:
   - packages/passkeys/passkeys_android
   - packages/passkeys/passkeys_darwin
   - packages/passkeys/passkeys_doctor
+  - packages/passkeys/passkeys_ohos
   - packages/passkeys/passkeys_platform_interface
   - packages/passkeys/passkeys_web
   - packages/passkeys/passkeys_windows

@@ -4,6 +4,10 @@
 
 Flutter packages to enable passkey authentication (based on WebAuthn / FIDO2).
 
+> This fork adds a HarmonyOS NEXT 6.0.0(20)+ implementation of `passkeys`.
+> See [the OHOS plugin guide](./packages/passkeys/passkeys_ohos/README.md) for
+> Git installation, supported operations, and device validation.
+
 |             | Android            | iOS                | Linux | macOS              | Web                | Windows            |
 | ----------- | ------------------ | ------------------ | ----- | ------------------ | ------------------ | ------------------ |
 | **Support** | :white_check_mark: | :white_check_mark: | :x:   | :white_check_mark: | :white_check_mark: | :white_check_mark: |

@@ -90,9 +90,12 @@ class PasskeyAuthenticator
           throw DeviceNotSupportedException();
         case 'android-passkey-unsupported':
           throw PasskeyUnsupportedException(e.message);
+        case 'ohos-unsupported-extension':
+          throw PasskeyUnsupportedException(e.message);
         case 'android-no-create-option':
           throw NoCreateOptionException(e.message);
         case 'android-timeout':
+        case 'ohos-timeout':
           throw TimeoutException(e.message);
         case 'ios-security-key-timeout':
           throw TimeoutException(e.message);
@@ -100,6 +103,8 @@ class PasskeyAuthenticator
           if (e.code.startsWith('android-unhandled')) {
             throw UnhandledAuthenticatorException(e.code, e.message, e.details);
           } else if (e.code.startsWith('ios-unhandled')) {
+            throw UnhandledAuthenticatorException(e.code, e.message, e.details);
+          } else if (e.code.startsWith('ohos-unhandled')) {
             throw UnhandledAuthenticatorException(e.code, e.message, e.details);
           } else {
             rethrow;
@@ -151,9 +156,12 @@ class PasskeyAuthenticator
           throw DeviceNotSupportedException();
         case 'android-passkey-unsupported':
           throw PasskeyUnsupportedException(e.message);
+        case 'ohos-unsupported-extension':
+          throw PasskeyUnsupportedException(e.message);
         case 'android-no-create-option':
           throw NoCreateOptionException(e.message);
         case 'android-timeout':
+        case 'ohos-timeout':
           throw TimeoutException(e.message);
         case 'ios-security-key-timeout':
           throw TimeoutException(e.message);
@@ -161,6 +169,8 @@ class PasskeyAuthenticator
           if (e.code.startsWith('android-unhandled')) {
             throw UnhandledAuthenticatorException(e.code, e.message, e.details);
           } else if (e.code.startsWith('ios-unhandled')) {
+            throw UnhandledAuthenticatorException(e.code, e.message, e.details);
+          } else if (e.code.startsWith('ohos-unhandled')) {
             throw UnhandledAuthenticatorException(e.code, e.message, e.details);
           } else {
             rethrow;
