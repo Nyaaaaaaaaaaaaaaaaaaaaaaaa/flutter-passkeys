@@ -95,6 +95,7 @@ class PasskeyAuthenticator
         case 'android-no-create-option':
           throw NoCreateOptionException(e.message);
         case 'android-timeout':
+        case 'ohos-timeout':
           throw TimeoutException(e.message);
         case 'ios-security-key-timeout':
           throw TimeoutException(e.message);
@@ -160,6 +161,7 @@ class PasskeyAuthenticator
         case 'android-no-create-option':
           throw NoCreateOptionException(e.message);
         case 'android-timeout':
+        case 'ohos-timeout':
           throw TimeoutException(e.message);
         case 'ios-security-key-timeout':
           throw TimeoutException(e.message);

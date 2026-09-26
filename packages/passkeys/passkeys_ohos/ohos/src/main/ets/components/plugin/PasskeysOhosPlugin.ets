@@ -13,18 +13,63 @@ interface CredentialJson {
   transports?: string[];
 }
 
+interface RpJson {
+  id?: string;
+  name: string;
+}
+
+interface UserJson {
+  id: string;
+  name: string;
+  displayName: string;
+}
+
+interface ParameterJson {
+  type: string;
+  alg: number;
+}
+
+interface SelectionJson {
+  authenticatorAttachment?: string;
+  residentKey?: string;
+  requireResidentKey?: boolean;
+  userVerification?: string;
+}
+
+interface AttestationResponseJson {
+  clientDataJSON: string;
+  attestationObject: string;
+  transports?: string[];
+}
+
+interface AssertionResponseJson {
+  clientDataJSON: string;
+  authenticatorData: string;
+  signature: string;
+  userHandle: string;
+}
+
+interface ResultJson<T> {
+  id: string;
+  rawId: string;
+  type: string;
+  response: T;
+  clientExtensionResults: Record<string, string>;
+}
+
+interface AvailabilityJson {
+  hasPasskeySupport: boolean;
+  isUserVerifyingPlatformAuthenticatorAvailable: boolean;
+  isConditionalMediationAvailable: boolean;
+}
+
 interface RegisterJson {
   challenge: string;
-  rp: { id?: string; name: string };
-  user: { id: string; name: string; displayName: string };
-  pubKeyCredParams?: Array<{ type: string; alg: number }>;
+  rp: RpJson;
+  user: UserJson;
+  pubKeyCredParams?: Array<ParameterJson>;
   excludeCredentials?: CredentialJson[];
-  authenticatorSelection?: {
-    authenticatorAttachment?: string;
-    residentKey?: string;
-    requireResidentKey?: boolean;
-    userVerification?: string;
-  };
+  authenticatorSelection?: SelectionJson;
   timeout?: number;
   attestation?: string;
   extensions?: Record<string, Object>;
@@ -74,7 +119,7 @@ function nativeError(error: BusinessError, operation: string): string {
     case 1021310006:
       return 'no-credentials-available';
     case 1021300012:
-      return 'ohos-credential-limit';
+      return 'ohos-unhandled-credential-limit';
     default:
       return `ohos-unhandled-${operation}-${error.code}`;
   }
@@ -123,7 +168,11 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
           if (json.extensions && Object.keys(json.extensions).length > 0) {
             throw new Error('OHOS FIDO2 does not expose the requested WebAuthn extension');
           }
-          const options: fido2.PublicKeyCredentialCreationOptions = {
+           const defaultParams: Array<ParameterJson> = [
+             { type: 'public-key', alg: -7 },
+             { type: 'public-key', alg: -257 },
+           ];
+           const options: fido2.PublicKeyCredentialCreationOptions = {
             rp: json.rp,
             user: {
               id: decodeBase64Url(json.user.id),
@@ -131,10 +180,7 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
               displayName: json.user.displayName,
             },
             challenge: decodeBase64Url(json.challenge),
-            pubKeyCredParams: (json.pubKeyCredParams ?? [
-              { type: 'public-key', alg: -7 },
-              { type: 'public-key', alg: -257 },
-            ]).map((param) => ({
+             pubKeyCredParams: (json.pubKeyCredParams ?? defaultParams).map((param): fido2.PublicKeyCredentialParameters => ({
               type: param.type as fido2.PublicKeyCredentialType,
               alg: param.alg as fido2.Algorithm,
             })),
@@ -150,7 +196,7 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
           };
           const response = await fido2.register(context, { publicKey: options });
           const id = encodeBase64Url(response.rawId);
-          return JSON.stringify({
+           const output: ResultJson<AttestationResponseJson> = {
             id, rawId: id, type: response.type,
             response: {
               clientDataJSON: encodeBase64Url(response.response.clientDataJson),
@@ -158,7 +204,8 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
               transports: response.response.transports,
             },
             clientExtensionResults: {},
-          });
+           };
+           return JSON.stringify(output);
         });
         return;
       case 'authenticate':
@@ -181,7 +228,7 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
           const mediation = call.argument('mediation') as fido2.CredentialMediationRequirement;
           const response = await fido2.authenticate(context, { publicKey: options, mediation });
           const id = encodeBase64Url(response.rawId);
-          return JSON.stringify({
+           const output: ResultJson<AssertionResponseJson> = {
             id, rawId: id, type: response.type,
             response: {
               clientDataJSON: encodeBase64Url(response.response.clientDataJson),
@@ -190,7 +237,8 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
               userHandle: response.response.userHandle ? encodeBase64Url(response.response.userHandle) : '',
             },
             clientExtensionResults: {},
-          });
+           };
+           return JSON.stringify(output);
         });
         return;
       case 'cancelCurrentAuthenticatorOperation':
@@ -202,8 +250,8 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
     }
   }
 
-  private async getAvailability(): Promise<Record<string, boolean>> {
-    const unavailable = {
+  private async getAvailability(): Promise<AvailabilityJson> {
+    const unavailable: AvailabilityJson = {
       hasPasskeySupport: false,
       isUserVerifyingPlatformAuthenticatorAvailable: false,
       isConditionalMediationAvailable: false,

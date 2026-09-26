@@ -1,0 +1,68 @@
+name: HarmonyOS HAP
+
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  hap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dev
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up HarmonyOS SDK
+        uses: ErBWs/setup-ohos@4dbb63025116eb6165ceac58a4bf47cbdc5ac721
+        with:
+          version: 6.1.1.280
+          cache: true
+
+      - name: Install pinned HarmonyOS Flutter
+        run: |
+          git clone --depth 1 --branch 3.41.10-ohos-1.0.1 \
+            https://gitcode.com/CPF-Flutter/flutter_flutter.git "$RUNNER_TEMP/flutter-ohos"
+          test "$(git -C "$RUNNER_TEMP/flutter-ohos" rev-parse HEAD)" = \
+            'adaf911c35c9136a7d18fc424d714c9ec7724e60'
+          echo "$RUNNER_TEMP/flutter-ohos/bin" >> "$GITHUB_PATH"
+
+      - name: Build standalone HAP with passkeys_ohos
+        working-directory: examples/passkeys_ohos_example
+        run: |
+          export DEVECO_SDK_HOME="$HOS_SDK_HOME"
+          export OHOS_SDK_HOME="$HOS_SDK_HOME"
+          flutter --version
+          flutter pub get
+          flutter analyze --fatal-infos .
+          flutter build hap --debug --no-codesign --no-pub
+
+      - name: Verify package contents
+        run: |
+          hap=examples/passkeys_ohos_example/build/ohos/hap/entry-default-unsigned.hap
+          test -s "$hap"
+          unzip -l "$hap" | grep -F 'ets/modules.abc'
+          unzip -l "$hap" | grep -F 'resources/rawfile/flutter_assets/'
+          unzip -p "$hap" ets/modules.abc > "$RUNNER_TEMP/modules.abc"
+          grep -aFq 'PasskeysOhosPlugin' "$RUNNER_TEMP/modules.abc"
+          test -s packages/passkeys/passkeys_ohos/ohos/src/main/ets/components/plugin/PasskeysOhosPlugin.ets
+          mkdir -p dist
+          cp "$hap" dist/passkeys-ohos-example-unsigned.hap
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: passkeys-ohos-hap
+          path: dist/passkeys-ohos-example-unsigned.hap
+          if-no-files-found: error
+          retention-days: 14
