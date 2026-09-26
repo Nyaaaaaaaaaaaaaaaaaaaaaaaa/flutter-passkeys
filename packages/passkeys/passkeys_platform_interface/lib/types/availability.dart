@@ -104,3 +104,19 @@ class AvailabilityTypeWindows extends AvailabilityType {
   /// Indicates if Windows Hello or other platform authenticators are available.
   final bool isUserVerifyingPlatformAuthenticatorAvailable;
 }
+
+/// HarmonyOS NEXT FIDO2 availability reported by the platform.
+class AvailabilityTypeOHOS extends AvailabilityType {
+  /// Creates an OHOS availability result.
+  AvailabilityTypeOHOS({
+    required super.hasPasskeySupport,
+    required this.isUserVerifyingPlatformAuthenticatorAvailable,
+    required this.isConditionalMediationAvailable,
+  }) : super(isNative: true);
+
+  /// Whether the device can verify the user with a platform authenticator.
+  final bool isUserVerifyingPlatformAuthenticatorAvailable;
+
+  /// Whether the device supports conditional credential retrieval.
+  final bool isConditionalMediationAvailable;
+}

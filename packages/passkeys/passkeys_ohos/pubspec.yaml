@@ -1,0 +1,30 @@
+name: passkeys_ohos
+description: HarmonyOS NEXT implementation of the passkeys Flutter plugin.
+version: 0.1.0
+repository: https://github.com/Nyaaaaaaaaaaaaaaaaaaaaaaaa/flutter-passkeys
+publish_to: none
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+  flutter: '>=3.35.0'
+
+resolution: workspace
+
+flutter:
+  plugin:
+    implements: passkeys
+    platforms:
+      ohos:
+        pluginClass: PasskeysOhosPlugin
+        dartPluginClass: PasskeysOhos
+
+dependencies:
+  flutter:
+    sdk: flutter
+  passkeys_platform_interface:
+    path: ../passkeys_platform_interface
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: ^5.0.0

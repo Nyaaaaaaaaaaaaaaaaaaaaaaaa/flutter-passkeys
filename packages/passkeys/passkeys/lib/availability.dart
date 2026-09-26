@@ -47,4 +47,9 @@ class GetAvailability {
   Future<AvailabilityTypeWindows> windows() {
     return _platform.getAvailability() as Future<AvailabilityTypeWindows>;
   }
+
+  /// Queries HarmonyOS NEXT FIDO2 capabilities.
+  Future<AvailabilityTypeOHOS> ohos() {
+    return _platform.getAvailability() as Future<AvailabilityTypeOHOS>;
+  }
 }
