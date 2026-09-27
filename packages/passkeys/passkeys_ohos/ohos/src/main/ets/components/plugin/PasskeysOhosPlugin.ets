@@ -258,12 +258,16 @@ export default class PasskeysOhosPlugin implements FlutterPlugin, MethodCallHand
     };
     if (!this.context) return unavailable;
     try {
-      const capabilities = await fido2.getClientCapabilities(this.context);
+      // HarmonyOS 6.1 returns a plain object even though the SDK declares Map.
+      const capabilities = await fido2.getClientCapabilities(this.context) as
+        Map<fido2.ClientCapability, boolean> | Record<string, boolean>;
+      const hasCapability = (key: fido2.ClientCapability): boolean =>
+        capabilities instanceof Map ? capabilities.get(key) === true : capabilities[key] === true;
       return {
-        hasPasskeySupport: capabilities.get(fido2.ClientCapability.PASSKEY_PLATFORM_AUTHENTICATOR) ?? false,
+        hasPasskeySupport: hasCapability(fido2.ClientCapability.PASSKEY_PLATFORM_AUTHENTICATOR),
         isUserVerifyingPlatformAuthenticatorAvailable:
-          capabilities.get(fido2.ClientCapability.USER_VERIFYING_PLATFORM_AUTHENTICATOR) ?? false,
-        isConditionalMediationAvailable: capabilities.get(fido2.ClientCapability.CONDITIONAL_GET) ?? false,
+          hasCapability(fido2.ClientCapability.USER_VERIFYING_PLATFORM_AUTHENTICATOR),
+        isConditionalMediationAvailable: hasCapability(fido2.ClientCapability.CONDITIONAL_GET),
       };
     } catch (_) {
       return unavailable;
